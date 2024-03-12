@@ -2,8 +2,8 @@
 
 *Con Irinnia Vargas y Michael Encalada*
 
-Descripción:
-Este curso introductorio a R Studio está diseñado para proporcionar a los participantes una comprensión básica de cómo utilizar R Studio para análisis de datos y programación en R. R Studio es un entorno de desarrollo integrado (IDE) ampliamente utilizado para trabajar con el lenguaje de programación R, que es popular en la comunidad de análisis de datos y estadísticas.
+
+Este curso introductorio a R Studio está diseñado para proporcionar a los participantes una comprensión básica de cómo utilizar R Studio para análisis de datos y programación en R. R Studio es un entorno de desarrollo integrado (IDE) ampliamente utilizado para trabajar con el lenguaje de programación R, que es popular en la comunidad de análisis de datos y estadística.
 
 Contenido del Curso:
 
