@@ -1,0 +1,427 @@
+---
+title: "Regresiones I"
+author: "Michael Encalada"
+date: "2024-03-24"
+output:
+  slidy_presentation:
+      widescreen: true
+---
+## LABORATORIO DE INTELIGENCIA ARTIFICIAL Y MÉTODOS COMPUTACIONALES EN CIENCIAS SOCIALES (QLAB)
+
+### TALLER INTRODUCTORIO DE R 2024-1
+
+### SESIÓN 4
+
+Objetivo de la Sesión: Introducir a los estudiantes a los conceptos básicos de regresiones, incluyendo asociación y correlación, modelos lineales simples y múltiples, y una introducción a modelos no lineales, utilizando el conjunto de datos mtcars de R.
+
+# 1. Introducción 
+
+## Breve revisión de estadísticas descriptivas e inferenciales
+Las estadísticas descriptivas se ocupan de describir y resumir los datos. Incluyen medidas de tendencia central como la media, mediana y moda, así como medidas de dispersión como el rango, varianza, desviación estándar, y cuartiles.
+
+Por otro lado, las estadísticas inferenciales se utilizan para hacer predicciones o inferencias sobre una población a partir de una muestra. Esto incluye la estimación de parámetros, pruebas de hipótesis, regresiones y más.
+
+```{r}
+# Ejemplo de estadísticas descriptivas con mtcars
+summary(mtcars$mpg)  # Resumen estadístico de millas por galón
+sd(mtcars$mpg)       # Desviación estándar de millas por galón
+
+```
+
+## Introducción a la idea de regresión: ¿Qué es y por qué es útil?
+La regresión es una herramienta estadística que nos permite explorar y modelar la relación entre dos o más variables. En su forma más simple, la regresión lineal busca una línea que mejor se ajuste a los datos, minimizando la distancia (error) entre la línea y los puntos de datos.
+
+Es útil porque nos permite:
+
+- Predecir el valor de una variable basándonos en el valor de otra(s).
+- Comprender la relación entre variables.
+- Evaluar la fuerza y dirección de la relación entre variables.
+
+```{r}
+# Ejemplo de diagrama de dispersión con mtcars
+plot(mtcars$hp, mtcars$mpg, main = "HP vs MPG", xlab = "Caballaje (HP)", ylab = "Millas por Galón (MPG)",
+     pch = 19, col = "blue")
+```
+
+## Diferencia entre variables dependientes e independientes
+
+En el contexto de la regresión:
+
+Una *variable dependiente* es aquella cuyo valor queremos predecir o explicar. Es el "resultado" o "efecto" en nuestra ecuación de regresión.
+
+Una *variable independiente* es la variable que usamos para hacer predicciones sobre la variable dependiente. Es la "causa" o "predictor".
+
+En el ejemplo anterior con el conjunto de datos mtcars, si queremos predecir mpg (millas por galón) en función de hp (caballos de fuerza), entonces mpg es nuestra variable dependiente y hp es nuestra variable independiente.
+
+# 2. Asociación y Correlación 
+
+## Teoría: Explicación de la asociación vs. correlación
+
+La asociación entre dos variables indica que existe alguna relación o conexión entre ellas. Esta asociación puede ser de cualquier forma y no necesariamente lineal.
+
+La correlación, por otro lado, mide la fuerza y dirección de una relación lineal entre dos variables cuantitativas. A diferencia de la asociación, la correlación se cuantifica, proporcionando un valor que varía entre -1 y 1:
+
++1: indica una correlación positiva perfecta.
+ 0: indica ninguna correlación.
+-1: indica una correlación negativa perfecta.
+
+La correlación de Pearson es una medida específica de correlación que asume una relación lineal entre las variables y que ambas están distribuidas normalmente.
+
+## Práctica
+
+### Diagramas de Dispersión
+Diagramas de Dispersión entre mpg y hp en mtcars con ggplot2
+
+Un diagrama de dispersión nos permite visualizar la relación entre dos variables. Vamos a ver la relación entre mpg (millas por galón) y hp (caballos de fuerza) del conjunto de datos mtcars.
+
+```{r}
+library(ggplot2)
+
+ggplot(mtcars, aes(x = hp, y = mpg)) +
+  geom_point(color = "blue") +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(title = "Relación entre HP y MPG",
+       x = "Caballaje (HP)", y = "Millas por Galón (MPG)") +
+  theme_minimal()
+```
+
+'geom_smooth(method = "lm")' añade una línea de regresión lineal, ayudando a visualizar la relación lineal entre hp y mpg.
+
+## Cálculo del coeficiente de correlación de Pearson y R2
+
+Calculamos el coeficiente de correlación de Pearson para entender la dirección y la fuerza de la relación:
+
+```{r}
+correlacion <- cor(mtcars$hp, mtcars$mpg)
+print(paste("Coeficiente de Correlación de Pearson: ", round(correlacion, 3)))
+```
+
+Para el coeficiente de determinación R2, podemos cuadrar el coeficiente de correlación de Pearson:
+
+```{r}
+r_cuadrado <- correlacion^2
+print(paste("R^2: ", round(r_cuadrado, 3)))
+```
+
+# 3. Modelos Lineales 
+
+Los modelos lineales son herramientas poderosas en estadísticas para examinar la relación entre variables. Permiten predecir una variable dependiente basada en la(s) variable(s) independiente(s).
+
+## Teoría: Fundamentos de la Regresión Lineal Simple y Múltiple
+
+### Regresión Lineal Simple
+
+En una regresión lineal simple, la relación entre la variable independiente X y la variable dependiente Y se modela usando una línea recta. La ecuación de este modelo es:
+
+La ecuación de un modelo de regresión lineal simple es:
+
+$$
+Y = \beta_0 + \beta_1X + \epsilon
+$$
+
+Donde:
+
+- $Y$ es la variable dependiente.
+- $X$ es la variable independiente.
+- $\beta_0$ es el intercepto, representando el valor esperado de $Y$ cuando $X = 0$.
+- $\beta_1$ es la pendiente de la línea, indicando cómo cambia $Y$ con una unidad de cambio en $X$.
+- $\epsilon$ es el término de error, representando la variabilidad en $Y$ que no se explica por $X$.
+
+### Regresión Múltiple
+
+Una *regresión múltiple* extiende la regresión lineal simple al incluir dos o más variables independientes. Esto permite examinar cómo múltiples factores influyen en la variable dependiente. La ecuación es:
+
+$$
+Y = \beta_0 + \beta_1X_1 + \beta_2X_2 + ... + \beta_nX_n + \epsilon
+$$
+
+Donde:
+
+- Cada $X_i$ representa una variable independiente distinta.
+- $\beta_i$ es el coeficiente para la variable independiente $X_i$, mostrando el cambio esperado en $Y$ por una unidad de cambio en $X_i$, manteniendo constantes las otras variables.
+
+
+
+## Práctica: Regresión Lineal Simple
+
+Construiremos un modelo lineal simple utilizando mpg como variable dependiente y hp como independiente, usando el conjunto de datos mtcars.
+
+```{r}
+modelo_lineal <- lm(mpg ~ hp, data = mtcars)
+summary(modelo_lineal)
+```
+
+### Interpretación de Coeficientes y $R^2$
+
+- **Intercepto ($\beta_0$):** Es el valor esperado de `mpg` cuando `hp` es 0. Esto representa el punto en el que la línea de regresión cruza el eje Y en un gráfico de dispersión entre `mpg` y `hp`.
+
+- **Pendiente ($\beta_1$):** Por cada unidad adicional de `hp`, se espera que `mpg` cambie por el valor de este coeficiente. Esto nos indica la dirección y la magnitud de la relación entre `hp` y `mpg`. Una pendiente positiva indica que a medida que `hp` aumenta, también lo hace `mpg`, y viceversa.
+
+- **$R^2$:** La proporción de la variabilidad en `mpg` que puede ser explicada por `hp`. Un $R^2$ cercano a 1 indica que el modelo explica una gran parte de la variabilidad de los datos. Por otro lado, un $R^2$ cercano a 0 sugiere que el modelo no explica bien la variabilidad de los datos.
+
+## Práctica: Regresión Múltiple
+
+Ahora, incluiremos wt (peso del automóvil) como otra variable independiente en nuestro modelo.
+
+```{r}
+modelo_multiple <- lm(mpg ~ hp + wt, data = mtcars)
+summary(modelo_multiple)
+```
+
+### Cómo Interpretar Coeficientes en un Contexto Multivariable
+
+Los **coeficientes ($\beta_i$)** en un modelo de regresión múltiple tienen una interpretación específica: cada coeficiente muestra el cambio esperado en la variable dependiente (por ejemplo, `mpg`) por una unidad de cambio en la variable independiente correspondiente ($X_i$), manteniendo constantes las otras variables. Esto se puede expresar como:
+
+$$
+\Delta Y = \beta_i \Delta X_i
+$$
+
+donde $\Delta Y$ es el cambio esperado en `mpg` y $\Delta X_i$ es el cambio en la variable independiente $X_i$.
+
+Es crucial considerar la **multicolinealidad**, que ocurre cuando las variables independientes están correlacionadas entre sí. Esto puede inflar los coeficientes y hacer difícil interpretar individualmente cada variable. La multicolinealidad puede ser diagnosticada y tratada mediante varias técnicas estadísticas, como el Factor de Inflación de la Varianza (VIF).
+
+Al construir modelos múltiples, es importante evaluar no solo la **significancia estadística** de cada variable (a través del valor $p$) sino también el **impacto global del modelo**, considerando métricas como el $R^2$ ajustado. El $R^2$ ajustado penaliza el modelo por tener demasiadas variables independientes, proporcionando una medida más precisa de la capacidad del modelo para explicar la variabilidad en la variable dependiente:
+
+$$
+R^2_{\text{ajustado}} = 1 - \frac{(1 - R^2)(n - 1)}{n - p - 1}
+$$
+
+donde $n$ es el número de observaciones y $p$ es el número de predictores en el modelo.
+
+La **regresión múltiple** nos permite entender cómo múltiples factores contribuyen a la variabilidad en la variable dependiente, permitiendo análisis más complejos y realistas.
+
+
+# 4. Modelos No Lineales 
+
+Los modelos lineales son potentes y versátiles, pero hay situaciones donde la relación entre las variables no es lineal. En estos casos, los modelos no lineales pueden proporcionar una mejor descripción de los datos.
+
+## Teoría: Introducción a los Modelos No Lineales
+
+A diferencia de los modelos lineales, que asumen una relación lineal entre las variables independientes y dependientes, los modelos no lineales pueden adoptar muchas formas diferentes, permitiendo una flexibilidad mucho mayor en la modelización de relaciones complejas. Pueden incluir términos polinomiales, logarítmicos, exponenciales, entre otros.
+
+Uno de los enfoques más comunes para modelar relaciones no lineales es incluir términos polinomiales en un modelo lineal, lo que se conoce como regresión polinomial. Esto nos permite capturar curvaturas en los datos manteniendo la estructura de un modelo lineal, facilitando su interpretación y estimación.
+
+## Práctica: Ajuste de un Modelo No Lineal (Cuadrático)
+
+Vamos a ajustar un modelo no lineal utilizando el conjunto de datos mtcars, específicamente modelando mpg (millas por galón) como una función cuadrática de hp (caballos de fuerza).
+
+```{r}
+modelo_cuadratico <- lm(mpg ~ hp + I(hp^2), data = mtcars)
+summary(modelo_cuadratico)
+```
+
+En esta ecuación, I(hp^2) representa el término cuadrático, permitiéndonos modelar el efecto no lineal de hp sobre mpg.
+
+## Comparación de Ajustes Lineales y No Lineales
+Para comparar el ajuste de los modelos lineales y no lineales, podemos mirar varias métricas, incluido el $R^2$, el AIC (Criterio de Información de Akaike), o directamente comparar los residuos. También podemos visualizar los modelos respecto a los datos.
+
+```{r}
+# Visualizar los datos y los modelos
+ggplot(mtcars, aes(x = hp, y = mpg)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y ~ x, colour = "red", se = FALSE) +
+  geom_smooth(method = "lm", formula = y ~ poly(x, 2), colour = "blue", se = FALSE) +
+  labs(title = "Comparación de Modelos Lineal vs Cuadrático",
+       x = "Caballaje (HP)", y = "Millas por Galón (MPG)") +
+  theme_minimal()
+```
+
+En este gráfico:
+
+- Los puntos representan los datos observados.
+- La línea roja es la predicción del modelo lineal.
+- La línea azul representa el ajuste del modelo cuadrático.
+
+Esto nos permite visualizar cómo el modelo cuadrático (no lineal) puede capturar mejor la relación entre hp y mpg, especialmente si hay una curvatura en los datos que el modelo lineal no puede representar adecuadamente.
+
+#### Interpretación
+
+Al interpretar el modelo cuadrático, el coeficiente del término $hp$ indica cómo cambia mpg con hp de una manera lineal, mientras que el coeficiente del término $hp^2$ muestra cómo el efecto de hp sobre mpg cambia a medida que hp aumenta. Un coeficiente positivo para  $hp^2$  sugeriría un efecto crecientemente positivo de hp sobre mpg a medida que hp aumenta, mientras que un coeficiente negativo indicaría lo contrario.
+
+Además del modelo cuadrático, exploraremos otros tipos de modelos no lineales útiles para diferentes tipos de datos y situaciones de análisis.
+
+## Modelo de Regresión de Poisson
+
+El modelo de regresión de Poisson es útil para modelar datos de conteo, donde la variable dependiente representa el número de veces que ocurre un evento en un intervalo fijo de tiempo o espacio.
+
+Teoría: Este modelo asume que la variable dependiente $Y$ sigue una distribución de Poisson, que es adecuada para datos de conteo y situaciones donde el número promedio de eventos es relativamente bajo en comparación con el rango posible de eventos.
+
+Práctica: Supongamos que queremos modelar el número de veces (ficticio) que un automóvil ha sido reparado (repairs) basado en su caballos de fuerza (hp). Primero, generaremos una variable ficticia de conteo para este propósito.
+
+```{r}
+# Agregar una variable ficticia de conteo de reparaciones al conjunto de datos mtcars
+set.seed(123) # Para reproducibilidad
+mtcars$repairs <- rpois(nrow(mtcars), lambda = runif(n = 1, min = 0, max = 5))
+
+# Ahora ajustamos un modelo de regresión de Poisson con esta nueva variable
+modelo_poisson <- glm(repairs ~ hp, family = poisson(link = "log"), data = mtcars)
+summary(modelo_poisson)
+```
+
+## Modelos de Regresión Logística
+
+La regresión logística es utilizada cuando la variable dependiente es binaria (0/1, Verdadero/Falso), permitiendo estimar la probabilidad de ocurrencia de un evento.
+
+Práctica: Supondremos que un coche tiene un MPG alto si su mpg está por encima de la mediana de MPG en el conjunto de datos mtcars. Esto nos permite dividir el conjunto de datos en dos grupos de manera equitativa para el propósito de este ejemplo.
+
+A continuación, ajustaremos el modelo de regresión logística con wt (peso) y hp (caballos de fuerza) como predictores.
+
+```{r}
+# Cargar el paquete necesario
+if (!requireNamespace("dplyr", quietly = TRUE)) install.packages("dplyr")
+library(dplyr)
+
+# Agregar la variable binaria mpg_high al conjunto de datos mtcars
+mtcars <- mtcars %>%
+  mutate(mpg_high = if_else(mpg > median(mpg), 1, 0))
+
+# Ajustar un modelo de regresión logística
+modelo_logistico <- glm(mpg_high ~ wt + hp, family = binomial, data = mtcars)
+
+# Resumen del modelo
+summary(modelo_logistico)
+```
+
+## Modelos para Eventos (Cox)
+
+El modelo de riesgos proporcionales de Cox es una técnica de regresión utilizada para el análisis de supervivencia, permitiendo examinar el efecto de las variables independientes sobre los tiempos hasta que ocurra un evento de interés.
+
+Práctica: Considera el caso de estudiar el tiempo hasta que los vehículos experimentan una falla mecánica grave, donde time_to_failure es el tiempo hasta la falla y failure indica si ocurrió una falla (1) o no (0). 
+
+Para ajustar un modelo de riesgos proporcionales de Cox, como se describe, necesitamos primero crear las variables ficticias time_to_failure y failure en el conjunto de datos mtcars, ya que estos no están incluidos originalmente. La variable time_to_failure representaría el tiempo hasta que ocurra un evento (por ejemplo, falla mecánica), y failure sería un indicador binario de si el evento (falla) ocurrió (1) o no (0).
+
+Vamos a simular estas variables para ajustar un modelo de Cox:
+
+```{r}
+# Suponiendo que no tenemos estas variables, las crearemos de manera ficticia
+set.seed(123)  # Para reproducibilidad
+mtcars$time_to_failure <- runif(nrow(mtcars), min = 100, max = 1000)  # Tiempo ficticio hasta la falla
+mtcars$failure <- rbinom(nrow(mtcars), size = 1, prob = 0.3)  # Indicador de falla (0 no ocurrió, 1 ocurrió)
+
+# Asegúrate de tener el paquete survival instalado
+if (!requireNamespace("survival", quietly = TRUE)) install.packages("survival")
+library(survival)
+
+# Ajustar el modelo de Cox
+modelo_cox <- coxph(Surv(time_to_failure, failure) ~ wt + hp, data = mtcars)
+
+# Resumen del modelo
+summary(modelo_cox)
+```
+
+Cada uno de estos modelos aborda diferentes tipos de datos y preguntas de investigación, ampliando significativamente el alcance de análisis que puedes realizar más allá de las relaciones lineales y cuadráticas. Al seleccionar el modelo apropiado para tus datos, considera cuidadosamente la naturaleza de la variable dependiente, la distribución de tus datos, y el tipo de pregunta que buscas responder.
+
+# 5. Visualización e Interpretación Interactiva 
+
+La visualización de datos es una herramienta esencial para entender los resultados de los modelos estadísticos. Hacer estas visualizaciones interactivas con plotly en R puede mejorar significativamente la interpretación y la comunicación de los resultados.
+
+## Uso de plotly para Hacer Gráficos de los Modelos Interactivos
+
+plotly es un paquete en R que permite crear gráficos interactivos, que pueden ser particularmente útiles para explorar cómo los diferentes valores de las variables independientes afectan las predicciones de un modelo.
+
+Ejemplo con un Modelo Lineal Simple
+
+Primero, ajustemos un modelo lineal simple y visualicémoslo con plotly.
+
+```{r}
+library(ggplot2)
+library(plotly)
+
+# Ajustar un modelo lineal simple
+modelo_lineal <- lm(mpg ~ wt, data = mtcars)
+
+# Crear un gráfico base con ggplot2
+g <- ggplot(mtcars, aes(x = wt, y = mpg)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Relación entre Peso y MPG",
+       x = "Peso (1000 lbs)", y = "Millas por Galón")
+
+# Convertir el gráfico de ggplot2 a plotly para interactividad
+p <- ggplotly(g)
+
+# Mostrar el gráfico interactivo
+p
+```
+
+Este gráfico interactivo permite a los usuarios acercar, alejar y pasar el mouse sobre los datos para obtener más detalles, facilitando una exploración más profunda de la relación entre las variables.
+
+## Discusión sobre Cómo la Visualización Ayuda en la Interpretación de Modelos
+
+La visualización de los resultados del modelo nos ayuda a:
+
+- *Identificar Tendencias y Patrones*: Facilita la identificación de relaciones lineales o no lineales entre variables.
+- *Detectar Anomalías*: Permite identificar fácilmente valores atípicos o datos que no se ajustan al modelo.
+- *Comunicar Resultados*: Hace que los hallazgos sean más accesibles para audiencias no técnicas.
+
+## Ejercicio Interactivo: Ajuste de Modelos y Visualización de Resultados
+
+Ahora, intentemos un ejercicio interactivo donde ajustaremos un modelo no lineal y lo visualizaremos con plotly.
+
+Modelo Cuadrático
+
+```{r}
+# Ajustar un modelo cuadrático
+modelo_cuadratico <- lm(mpg ~ wt + I(wt^2), data = mtcars)
+
+# Crear un gráfico base
+g2 <- ggplot(mtcars, aes(x = wt, y = mpg)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y ~ poly(x, 2), se = FALSE) +
+  labs(title = "Modelo Cuadrático de Peso sobre MPG",
+       x = "Peso (1000 lbs)", y = "Millas por Galón")
+
+# Convertir a plotly
+p2 <- ggplotly(g2)
+
+# Mostrar el gráfico interactivo
+p2
+```
+
+Este gráfico muestra cómo el ajuste cuadrático captura la relación no lineal entre wt y mpg, ofreciendo una interpretación visual de la efectividad del modelo.
+
+Estos ejemplos demuestran el poder de las visualizaciones interactivas en el análisis y presentación de modelos estadísticos, permitiendo a los usuarios y a los analistas explorar y entender los datos y los resultados del modelo de manera más intuitiva y profunda.
+
+
+# Cierre 
+
+El cierre de nuestra sesión sobre regresiones es un momento crucial para consolidar el aprendizaje, responder a cualquier duda y orientar a los estudiantes hacia recursos adicionales para profundizar en el tema.
+
+## Resumen de los Conceptos Clave
+
+Hemos explorado varios aspectos fundamentales de las regresiones, incluyendo:
+
+- *Asociación y Correlación*: Entendimos cómo medir la relación lineal entre dos variables y la importancia de distinguir entre asociación y correlación.
+- *Modelos Lineales*: Aprendimos a construir y interpretar modelos lineales simples y múltiples, utilizando el conjunto de datos mtcars para ejemplificar cómo estas técnicas nos permiten entender las relaciones entre variables.
+- *Modelos No Lineales*: Vimos cómo ajustar y analizar modelos que no se ajustan a una relación lineal, incluyendo modelos cuadráticos, de regresión de Poisson, logísticos y para eventos de Cox, abriendo la puerta a análisis más complejos.
+- *Visualización e Interpretación Interactiva*: Descubrimos el poder de plotly para hacer gráficos interactivos que facilitan la exploración y comprensión de los modelos.
+
+## Preguntas y Respuestas
+
+Este es el momento para que los estudiantes presenten preguntas sobre cualquier aspecto de la sesión. Las preguntas no solo ayudan a clarificar dudas sino que también pueden profundizar la comprensión de los temas tratados.
+
+## Recursos Adicionales para Aprender Más sobre Regresiones
+
+Para aquellos interesados en expandir su conocimiento sobre regresiones, aquí hay algunos recursos recomendados:
+
+*Libros*:
+
+- "An Introduction to Statistical Learning" por Gareth James, Daniela Witten, Trevor Hastie, y Robert Tibshirani. Un excelente recurso para comenzar, disponible gratuitamente en línea.
+- "The Elements of Statistical Learning" por Trevor Hastie, Robert Tibshirani, y Jerome Friedman. Más avanzado, también disponible gratuitamente en línea.
+
+*Cursos en Línea*:
+
+- Coursera y edX ofrecen cursos sobre regresiones y análisis de datos en R de universidades de renombre.
+- DataCamp tiene un curso específico sobre regresión en R que incluye muchos ejercicios prácticos.
+
+*Documentación y Tutoriales*:
+
+- La documentación de R y de paquetes específicos como ggplot2 y plotly.
+- Blogs de estadística y ciencia de datos, como R-bloggers, ofrecen tutoriales y ejemplos de análisis usando R.
+
+Recordemos que la práctica es clave para el aprendizaje efectivo de estas técnicas. Animo a los estudiantes a aplicar estos métodos en sus propios proyectos y experimentar con diferentes tipos de datos y modelos.
+
+Con esto concluimos nuestra sesión sobre regresiones. ¡Gracias por su participación y curiosidad!
+
+
+

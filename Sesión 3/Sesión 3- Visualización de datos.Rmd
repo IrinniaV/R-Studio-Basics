@@ -1,17 +1,33 @@
 ---
 title: "Sesión3-Qlab"
-author: "Irinnia Vargas"
+author: "Michael Encalada"
 date: "2023-08-30"
-output: html_document
+output:
+  slidy_presentation:
+      widescreen: true
 ---
+## LABORATORIO DE INTELIGENCIA ARTIFICIAL Y MÉTODOS COMPUTACIONALES EN CIENCIAS SOCIALES (QLAB)
 
-## LABORATORIO DE INTELIGENCIA ARTIFICIAL Y MÉTODOS COMPUTACIONALES EN CIENCIAS SOCIALES 
-### TALLER INTRODUCTORIO DE R 2023-2
-## SESIÓN 3
-_______________________________________________________________________________________________________________________
+### TALLER INTRODUCTORIO DE R 2024-1
 
+### SESIÓN 3
 
-## GAPMINDER
+**Contenidos de la sesión**
+
+Visualización de datos:
+- Creación de gráficos usando ggplot2
+- Interpretación de gráficos
+- Personalización de gráficos
+
+Introducción a la visualización de datos espaciales
+- Importación y manipulación de datos espaciales
+- Creación y personalización de mapas
+
+# Visualización de Datos
+
+## Tablas
+
+### Datos: GAPMINDER
 - Gapminder es una base de datos que contiene información demográfica, económica y 
 de salud de diferentes países de todo el mundo.
 - Creada por el profesor Hans Rosling y su equipo, su objetivo es proporcionar 
@@ -32,10 +48,114 @@ pacman::p_load(dplyr, ggplot2, tidyr, knitr, rio, haven,foreign, psych, reshape2
 
 ```{r}
 library(gapminder)
+library(dplyr)
 data<-gapminder 
 ```
 
-ctrl + alt + m // ctrl+ alt + i
+### Tabla de Frecuencias
+Vamos a crear una tabla de frecuencias para la variable continent para ver cómo se distribuyen los registros entre los diferentes continentes.
+
+```{r}
+# Creando una tabla de frecuencias para la variable 'continent'
+tabla_frecuencias <- data %>%
+  group_by(continent) %>%
+  summarise(Frecuencia = n())
+
+print(tabla_frecuencias)
+
+```
+
+Para hacer la tabla de frecuencias más interactiva y visualmente atractiva, puedes emplear el paquete DT de R, el cual es especialmente útil para documentos R Markdown que se compilan en HTML. Las tablas interactivas proporcionadas por DT permiten a los usuarios ordenar, filtrar y examinar los datos de forma más dinámica. Aquí te muestro cómo hacerlo:
+
+```{r}
+library(DT)
+library(dplyr)
+
+# Asegúrate de que tu data frame 'data' contiene la columna 'continent'
+# y luego crea la tabla de frecuencias
+tabla_frecuencias <- data %>%
+  group_by(continent) %>%
+  summarise(Frecuencia = n())
+
+# Hacer la tabla de frecuencias interactiva
+datatable(
+  tabla_frecuencias,
+  options = list(pageLength = 5),  # Cambia esto según necesites
+  caption = "Tabla de Frecuencias por Continente"
+)
+
+```
+
+
+### Tablas de Contingencia (Cruce de Variables)
+Ahora, crearemos una tabla de contingencia entre continent y year para ver la distribución de los registros a lo largo de los años por continente.
+
+```{r}
+# Creando una tabla de contingencia entre 'continent' y 'year'
+tabla_contingencia <- table(data$continent, data$year)
+
+print(tabla_contingencia)
+
+```
+
+Para hacer tus tablas de contingencia más atractivas y fáciles de interpretar en R, puedes considerar el uso de paquetes adicionales como kable del paquete knitr, DT para tablas dinámicas interactivas, o incluso formattable para agregar algo de estilo a las cifras. A continuación, te mostraré cómo puedes extender la sección de tablas de contingencia utilizando estos paquetes.
+
+#### Usando kable de knitr
+kable produce tablas simples pero elegantes, perfectas para documentos Markdown y HTML.
+```{r}
+library(knitr)
+
+# Usando kable para generar una tabla bonita
+kable(tabla_contingencia, caption = "Distribución de registros por año y continente")
+```
+
+#### Usando DT para una Tabla Interactiva
+Si estás creando un documento R Markdown que se renderizará en HTML, puedes hacer que tus tablas de contingencia sean interactivas utilizando el paquete DT. Esto es particularmente útil para explorar grandes conjuntos de datos.
+```{r}
+library(DT)
+
+# Convertir la tabla de contingencia en un data frame para DT
+tabla_contingencia_df <- as.data.frame.matrix(tabla_contingencia)
+
+# Hacer la tabla interactiva
+datatable(tabla_contingencia_df, options = list(pageLength = 5), 
+          caption = 'Distribución de registros por año y continente')
+
+```
+
+#### Usando formattable para Estilizar Tablas
+formattable te permite añadir condicionales de color, barras de progreso y otros elementos estilísticos a tus tablas, lo cual puede ser muy útil para resaltar datos importantes o patrones.
+
+```{r}
+library(formattable)
+
+# Convertir la tabla de contingencia en un data frame para formattable
+tabla_contingencia_df <- as.data.frame.matrix(tabla_contingencia)
+
+# Aplicar formattable para añadir estilos
+formattable(tabla_contingencia_df, list(
+  area(col = 1:nrow(tabla_contingencia_df)) ~ color_tile("white", "lightblue")
+))
+
+```
+
+
+### Gráfico de Barras con ggplot2
+Vamos a generar un gráfico de barras para visualizar el número de países por continente en la base de datos gapminder.
+
+```{r}
+library(ggplot2)
+
+# Creando un gráfico de barras para la cantidad de países por continente
+ggplot(data = data, aes(x = continent)) +
+  geom_bar() +
+  theme_minimal() +
+  labs(title = "Número de Países por Continente en Gapminder", x = "Continente", y = "Cantidad de Países")
+
+```
+
+# Graficos usando gapminder
+
 ```{r}
 gapminder %>% 
   filter(continent=="Europe", year== 1952)
@@ -507,4 +627,108 @@ ggplot(datos_china, aes(x = year, y = lifeExp)) +
 
 ```
 
+# Introducción a la visualización de datos espaciales
+
+## Importación y Manipulación de Datos Espaciales
+
+Para abordar la importación y manipulación de datos espaciales y la creación de mapas en R, podemos utilizar la librería sf junto con alguna base de datos espaciales disponible en R o en un paquete adicional. Una excelente base de datos para este propósito es nc (North Carolina dataset), que viene con el paquete sf. Este conjunto de datos contiene información geográfica y demográfica del estado de North Carolina, EE.UU., y es un excelente recurso para demostrar cómo trabajar con datos espaciales en R.
+
+Primero, vamos a cargar y manipular el conjunto de datos nc usando sf. Esta parte demostrará cómo importar datos espaciales y realizar una operación básica de manipulación.
+
+```{r}
+library(sf)
+
+# Cargando el conjunto de datos 'nc' de North Carolina directamente
+nc_path <- system.file("shape/nc.shp", package = "sf")
+nc <- st_read(nc_path)
+
+# Visualizar la estructura de los datos espaciales
+print(st_geometry_type(nc))
+print(head(nc))
+
+```
+
+
+## Creación de Mapas con ggplot2
+Una vez que tenemos nuestros datos espaciales listos, podemos crear un mapa básico utilizando ggplot2. En este ejemplo, haremos un mapa que muestra los condados de North Carolina.
+
+```{r}
+library(ggplot2)
+
+# Crear un mapa básico de North Carolina
+ggplot(data = nc) +
+  geom_sf(aes(fill = AREA)) + # Colorear los condados según su área
+  labs(title = "Mapa de North Carolina por Área de Condados",
+       fill = "Área") +
+  theme_minimal()
+
+```
+
+Además de los datos de North Carolina (nc), usaremos también el conjunto de datos world del paquete rnaturalearth para mostrar cómo crear varios tipos de mapas, incluyendo mapas temáticos y mapas interactivos.
+
+## Preparación
+Primero, asegurémonos de tener todo lo necesario:
+
+```{r}
+# Instalar paquetes si es necesario
+if (!requireNamespace("sf", quietly = TRUE)) install.packages("sf")
+if (!requireNamespace("ggplot2", quietly = TRUE)) install.packages("ggplot2")
+if (!requireNamespace("rnaturalearth", quietly = TRUE)) install.packages("rnaturalearth")
+if (!requireNamespace("rnaturalearthdata", quietly = TRUE)) install.packages("rnaturalearthdata")
+if (!requireNamespace("plotly", quietly = TRUE)) install.packages("plotly")
+
+# Cargar paquetes
+library(sf)
+library(ggplot2)
+library(rnaturalearth)
+library(plotly)
+
+# Cargar datos
+data(nc, package = "sf")
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+```
+
+## Mapa Básico con ggplot2
+Vamos a empezar con un mapa básico del mundo:
+
+```{r}
+ggplot(data = world) +
+  geom_sf() +
+  labs(title = "Mapa Mundial Básico") +
+  theme_minimal()
+
+```
+
+## Mapa Temático
+Ahora, crearemos un mapa temático del mundo, coloreando los países según su PIB per cápita. Para este ejemplo, necesitaríamos integrar los datos del PIB per cápita al conjunto de datos world. Simularemos esta integración con valores aleatorios para fines demostrativos:
+
+```{r}
+# Simular datos del PIB per cápita
+set.seed(123) # Para reproducibilidad
+world$gdpPercap <- runif(nrow(world), 500, 60000)
+
+# Crear un mapa coloreando los países según el PIB per cápita
+ggplot(data = world) +
+  geom_sf(aes(fill = gdpPercap)) +
+  scale_fill_viridis_c() +
+  labs(title = "Mapa Mundial por PIB per cápita Simulado", fill = "PIB per cápita") +
+  theme_minimal()
+```
+
+## Mapa Interactivo con plotly
+
+Para crear un mapa interactivo, convertiremos un gráfico ggplot2 a una versión interactiva con plotly:
+
+```{r}
+p <- ggplot(data = world) +
+  geom_sf(aes(fill = gdpPercap)) +
+  labs(title = "Mapa Mundial Interactivo por PIB per cápita", fill = "PIB per cápita")
+
+# Convertir a plotly para interactividad
+ggplotly(p)
+
+```
+
+FIN
 ## 
