@@ -1,6 +1,6 @@
 # Taller Introductorio a R Studio - Qlab- 2024-1
 
-*Con Irinnia Vargas y Michael Encalada*
+*Con Irinnia Vargas*
 
 
 Este curso introductorio a R Studio está diseñado para proporcionar a los participantes una comprensión básica de cómo utilizar R Studio para análisis de datos y programación en R. R Studio es un entorno de desarrollo integrado (IDE) ampliamente utilizado para trabajar con el lenguaje de programación R, que es popular en la comunidad de análisis de datos y estadística.
