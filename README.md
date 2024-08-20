@@ -22,5 +22,5 @@ Bienvenido al *Taller Introductorio a R Studio* ofrecido por el Qlab en el semes
 
 ---
 
-📧 Para más información o consultas, puedes contactar a **Irinnia Vargas** en [i.vargasv@pucp.edu.pe](mailto:i.vargasv@pucp.edu.pe).
+📧 **Irinnia Vargas** en [i.vargasv@pucp.edu.pe](mailto:i.vargasv@pucp.edu.pe).
 
