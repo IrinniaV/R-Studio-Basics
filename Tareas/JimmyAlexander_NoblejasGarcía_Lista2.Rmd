@@ -1,0 +1,128 @@
+---
+title: "Lista de ejercicios 2"
+author: "Alexander Noblejas"
+date: "2024-03-27"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(pacman)
+pacman::p_load(dplyr, ggplot2, tidyr, knitr, rio, haven,foreign, psych, reshape2, Hmisc, forcats)
+```
+
+
+```{r}
+# Creación de Tablas y Tablas de Frecuencias
+
+## 1. Crea un nuevo ‘data frame’ llamado ‘df_iris_subset’ seleccionando solo las columnas ‘Sepal.Length’, ‘Sepal.Width’, y ‘Species’ del conjunto de datos iris.
+
+### Datos de Iris
+data("iris")
+names(iris)
+```
+
+```{r}
+### creación del data frame
+df_iris_subset = iris[, c("Sepal.Length", "Sepal.Width", "Species")]
+df_iris_subset
+```
+
+```{r}
+str(df_iris_subset)
+```
+```{r}
+## 2. Genera una tabla de frecuencias para la columna ‘Species’ que indique cuántas flores hay de cada especie en el conjunto de datos ‘iris’.
+
+tabla_frecuencias <- df_iris_subset %>%
+  group_by(Species) %>%
+  summarise(Frecuencia = n())
+
+print(tabla_frecuencias)
+```
+```{r}
+#### Tabla de frecuencias interactiva
+library(DT)
+datatable(
+  tabla_frecuencias,
+  options = list(pageLength = 3),  # Cambia esto según necesites
+  caption = "Tabla de Frecuencia de flores por Especie"
+)
+```
+```{r}
+# Tablas de Contingencia
+## 3. Utiliza la función ‘table’ para crear una tabla de contingencia entre ‘Species’ y ‘Sepal.Width’ categorizado (puedes categorizar ‘Sepal.Width’ en 'Bajo', 'Medio', 'Alto' basándote en cuartiles).
+
+df_iris_subset_categorizado = iris %>%
+  mutate(Sepal.Width_Category = cut(Sepal.Width, 
+                                     breaks = quantile(Sepal.Width, probs = c(0, 0.5, 0.75, 1), na.rm = TRUE), 
+                                     labels = c("Bajo", "Medio", "Alto"),
+                                     include.lowest = TRUE))
+```
+
+```{r}
+tabla_contingencia <- table(df_iris_subset_categorizado$Species, df_iris_subset_categorizado$Sepal.Width_Category)
+print(tabla_contingencia)
+```
+
+```{r}
+## 4. Interpreta la tabla de contingencia creada, describiendo cualquier patrón notable entre las especies de iris y los anchos de sus sépalos.
+
+#* Setosa: Tiene la mayoría de sus sépalos clasificados como 'Alto' (31 de 50), mientras que solo unos pocos se clasifican como 'Bajo' (8 de 50). Esto sugiere que la especie setosa tiende a tener sépalos más anchos en comparación con otras especies en el conjunto de datos.
+
+#* Versicolor : Tiene la mayoría de sus sépalos clasificados como 'Bajo' (42 de 50), con solo unos pocos en las categorías 'Medio' y 'Alto'. Esto indica que la especie versicolor tiende a tener sépalos más estrechos en comparación con las otras especies.
+
+#* Virginica:  Muestra una distribución más uniforme entre las categorías de ancho de sépalo, con una cantidad significativa en todas las categorías ('Bajo' y 'Medio'). Aunque la cantidad de sépalos clasificados como 'Bajo' es menor en comparación con 'Versicolor', sigue siendo una cantidad considerable (33 de 50), lo que sugiere que la especie virginica también puede tener sépalos más estrechos.
+
+```
+
+```{r}
+## 5. Escribe un breve informe interpretando los resultados de la tabla de contingencia, centrándote en la relación entre la especie de iris y el ancho de pétalo.
+
+##Relación entre la Especie de Iris y el Ancho del Pétalo
+
+##De acuerdo con la tabla de contingencia, existen patrones distintivos entre las especies de iris y el ancho de sus sépalos. Lo que sugiere lo siguiente:
+  
+##* Especies Distintivas: Cada especie de iris exhibe características distintivas en cuanto al ancho de sus sétalos. Setosa tiende a tener sétalos más anchos, versicolor tiene sétalos de anchura baja y virginica muestra una variabilidad más amplia en el ancho de sus sétalos, pero predominan los sétalos de anchura baja.
+
+##* Potencial Identificación: Estos patrones podrían ser útiles para la identificación y clasificación de especies de iris en la naturaleza.
+
+##Conclusiones: El análisis de la relación entre la especie de iris y el ancho del pétalo destaca las diferencias distintivas entre las especies, lo que subraya la importancia de estas características morfológicas en la taxonomía y la comprensión de la biología de las plantas del género Iris.
+```
+
+```{r}
+# Gráficos con ‘ggplot2’
+## 6. Utiliza ggplot2 para crear un gráfico de barras que muestre el número de flores de cada especie en el conjunto de datos iris.
+
+library(ggplot2)
+
+# Creando un gráfico de barras que el número de flores de cada especie en el conjunto de datos iris.
+ggplot(data = df_iris_subset, aes(x = df_iris_subset$Species)) +
+  geom_bar() +
+  theme_minimal() +
+  labs(title = "Número de Países por Continente en Gapminder", x = "Especies", y = "Número de flores por especie en el conjunto de datos")
+```
+
+```{r}
+## 7. Crea un histograma para visualizar la distribución de Sepal.Length en el conjunto de datos iris.
+
+
+hist(df_iris_subset$Sepal.Length, main = "Distribución del tamaño de los sépalos", xlab="Tamaños de los sépalos", ylab="Frecuencia")
+```
+
+```{r}
+## 8. Genera un gráfico de cajas para comparar la distribución de Sepal.Width entre las diferentes especies de iris.
+
+boxplot(df_iris_subset$Sepal.Width ~ df_iris_subset$Species, col = rainbow(ncol(trees)))
+
+```
+
+
+
+
+
+
+
+
+
+
+

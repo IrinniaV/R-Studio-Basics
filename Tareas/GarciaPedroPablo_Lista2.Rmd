@@ -1,0 +1,85 @@
+---
+title: "GarciaPedroPablo_Lista2"
+author: "GarciaPedroPablo"
+date: "2024-03-27"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+df_iris_subset <- iris[, c("Sepal.Length", "Sepal.Width", "Species")]
+
+df_iris_subset
+```
+
+```{r}
+
+tabla_frecuencias <- count(df_iris_subset, Species)
+tabla_frecuencias
+
+```
+
+```{r}
+tabla_frecuencias2 <- table(df_iris_subset$Species)
+tabla_frecuencias2
+```
+
+```{r}
+
+df_iris_subset$Sepal.Width_cat <- cut(df_iris_subset$Sepal.Width, 3, labels = c("Bajo", "Medio", "Alto"))
+tabla_contingencia <- table(df_iris_subset[, c("Species", "Sepal.Width_cat")])
+tabla_contingencia
+
+```
+se observa un ancho centrado en el nivel medio 
+las especies versicolor y virginica tienen nula o poca presencia en la categoria alto ancho
+la setosa se centra en su mayoria en el ancho medio y tiene una presencia casi nula en el ancho bajo
+
+```{r}
+library(ggplot2)
+
+ggplot(iris, aes(x = Species)) +
+  geom_bar(stat = "count") +
+  labs(title = "Número de Flores por Especie", x = "Especie", y = "Cantidad")
+
+```
+
+```{r}
+ggplot(iris, aes(x = Sepal.Length)) +
+  geom_histogram(binwidth = 0.5) +
+  labs(title = "Distribución de la Longitud del Sépalos", x = "Longitud del Sépalos", y = "Frecuencia")
+
+```
+
+```{r}
+ggplot(iris, aes(x = Species, y = Sepal.Width)) +
+  geom_boxplot() +
+  labs(title = "Comparación de Ancho del Sépalos  por Especie", x = "Especie", y = "Ancho del Sépalos")
+
+```
+9. Explica la importancia de los archivos shapefile y GeoJSON en la visualización de datos espaciales y menciona un paquete en R que podría utilizarse para manejar estos formatos.
+
+shapefile se utiliza en los SIG y permiten la visualizacion de datos espaciales, debido a su almacenaje de información geografica como puntos lineas y poligonos
+
+GeoJSON define objetos geograficos y lo procesa de tal forma 
+que sea sencillo de leer e interpretar, se usa para crear webs interactivas
+en R se utiliza mas el paquete sf para usar shapefile y GeoJSON
+
+
+
+
+```{r}
+
+ggplot(iris, aes(x = Sepal.Length, y = Sepal.Width, color = Species)) +
+  geom_point() +
+  labs(title = "Relación entre longitud y ancho", x = "lonngitud", y = "ancho")
+
+```
+las setosas se agrupan en la parte izquierda, creciendo muy anchas pero cortas en longitud, mientras que las virginica en la parte derecha, creciendo muy largas pero poco anchas, se observa que las versicolor se encuentran en el nivel medio con un ancho y largo ni muy largo ni muy corto.
+```{r}
+
+```
+
